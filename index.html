@@ -2,22 +2,18 @@
 title: Insomniac Security
 ---
 
-{% for post in site.latest_posts %}
+{% for post in site.posts %}
 <div class="entry">
   	<div class="entrytitle">
-		<h2><a href="{{ post.url }}">{{ post.title }}</a> <span class="author">{{ post.author }}</span><span class="post_date">{{ post.date | date_to_string }}</span></h2> 
+		<h2><a href="{{ post.url }}">{{ post.title }}</a>
+		{% if post.author %}
+		<span class="author">{{ post.author }}</span>
+		{% endif %}
+		<span class="post_date">{{ post.date | date_to_string }}</span></h2> 
 	</div>
 
 	<div class="entrybody">
   		{{ post.content }}
-	</div>
-</div>
-{% endfor %}
-
-{% for post in site.older_posts %}
-<div class="entry old_entry">
-	<div class="entrytitle">
-		<h2><a href="{{ post.url }}">{{ post.title }}</a> <span class="author">{{ post.author }}</span><span class="post_date">{{ post.date | date_to_string }}</span></h2>
 	</div>
 </div>
 {% endfor %}
