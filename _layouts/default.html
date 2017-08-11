@@ -32,8 +32,13 @@
 
       <section>
         <div id="title">
+          {% if page.title %}
           <h1>{{ site.title }}</h1>
           <p>{{ site.description }}</p>
+          {% else %}
+          <h1>{{ site.title }}</h1>
+          <p>{{ site.description }}</p>
+          {% endif %}
         </div>
 
         {{ content }}
