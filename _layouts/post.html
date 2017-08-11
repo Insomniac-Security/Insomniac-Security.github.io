@@ -31,9 +31,9 @@
           {% if page.description %}
           <p>{{ page.description }}</p>
           {% endif %}
-          <i><span class="credits center">{{ page.date | date_to_string }}</span>
+          <i><span class="credits" style="text-align:center;">{{ page.date | date_to_string }}</span>
           {% if page.author %}
-          - <span class="credits">{{ page.author }}</span>
+          <span class="credits"> - {{ page.author }}</span>
           {% endif %}
           </i>
         </div>
