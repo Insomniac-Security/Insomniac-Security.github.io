@@ -7,10 +7,11 @@ layout: default
 <div class="entry">
   	<div class="entrytitle">
 		<h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
-		<i><span class="credits" style="text-align:center;"">{{ post.date | date_to_string }}</span>
+		<i><p style="text-align:center;">{{ post.date | date_to_string }}</span>
 		{% if post.author %}
-		<span class="credits"> - {{ post.author }}</span>
+		- {{ post.author }}
 		{% endif %}
+		</p>
 		</i>
 		<br>
 	</div>
