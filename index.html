@@ -6,9 +6,9 @@ layout: default
 {% for post in site.posts %}
 <div class="entry">
   	<div class="entrytitle">
-		<h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+		<h2><a href="{{ post.url }}">{{ post.title }}</a></h2>-
 		{% if post.author %}
-		<span class="author">{{ post.author }}</span>
+		<span class="author">{{ post.author }}</span><br>
 		{% endif %}
 		<span class="post_date">{{ post.date | date_to_string }}</span>
 	</div>
