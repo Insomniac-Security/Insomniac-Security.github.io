@@ -6,7 +6,8 @@ Title: Insomniac Security
   {% for post in site.posts %}
     <article class="post">
 
-      <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
+      <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1> - {{ post.date | date_to_string }}
+      <h3>{{ post.date | date_to_string }}</h3>
 
       <div class="entry">
         {{ post.description }}
