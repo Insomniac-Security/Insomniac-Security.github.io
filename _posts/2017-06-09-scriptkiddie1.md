@@ -2,6 +2,7 @@
 title: We're All Script Kiddies 1 - Domains for Evil
 published: true
 layout: post
+description: Quickly grabbing domains for phishing or other purposes with as little effort as possible.
 author: David E. Switzer
 ---
 ## Intro
