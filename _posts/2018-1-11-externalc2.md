@@ -1,6 +1,6 @@
 ---
 title: External C2 framework for Cobalt Strike
-published: true
+published: false
 layout: post
 description: Alpha release of External C2 framework
 author: Jonathan Echavarria
@@ -13,13 +13,13 @@ This post will discuss how to use it, and provide a tutorial on how to build you
 You can access the framework here: https://github.com/Und3rf10w/external_c2_framework
 
 # Intro
-Personally, I always give nothing but praise to Cobalt Strike's design. It's a great tool, designed to be very modular and modifiable, and compared to other offerings on the market, very reasonably prices (e.g. not $50k). With a well-featured base product, it also offers a scripting language, [Aggressor](https://www.cobaltstrike.com/aggressor-script/index.html), which is essentially Rafael Mudge's Java scripting language, [Sleep](http://sleep.dashnine.org/manual/). I've always said that if you're willing to put in the work to create Aggressor scripts and other minor modifications to fit your needs, you can easily enhance the value of Cobalt Strike to that of tools that cost more than 15 times what you paid for it.
+Personally, I give nothing but praise to Cobalt Strike's design. It's a great tool, designed to be very modular and modifiable, and compared to other offerings on the market, very reasonably prices (e.g. not $50k). With a well-featured base product, it also offers a scripting language, [Aggressor](https://www.cobaltstrike.com/aggressor-script/index.html), which is essentially Rafael Mudge's Java scripting language, [Sleep](http://sleep.dashnine.org/manual/). I've always said that if you're willing to put in the work to create Aggressor scripts and other minor modifications to fit your needs, you can easily enhance the value of Cobalt Strike to that of tools that cost more than 15 times what you paid for it.
 
-Unfortunately, the only area it was lacking was that the data channels that the beacon payload were somewhat limited, which is a major feature of other offerings in the space. Imagine my surprise, and excitement, [when I learned about the external c2 specification](https://blog.cobaltstrike.com/2017/10/03/kits-profiles-and-scripts-oh-my/)!
+The only area I thought it was lacking was that the data channels that the beacon payload were somewhat limited, which is a major feature of other offerings in the space. Imagine my surprise, and excitement, [when I learned about the external c2 specification](https://blog.cobaltstrike.com/2017/10/03/kits-profiles-and-scripts-oh-my/)!
 
-To date, there have been [a few](https://github.com/ryhanson/ExternalC2) [different](https://labs.mwrinfosecurity.com/blog/tasking-office-365-for-cobalt-strike-c2) [releases](https://github.com/outflanknl/external_c2) of implementations/discussions around the spec, but they are in a language that I'm not familiar with (`¯\_(ツ)_/¯`), or do not have the features that I desire.
+To date, there have been [a few](https://github.com/ryhanson/ExternalC2) [different](https://labs.mwrinfosecurity.com/blog/tasking-office-365-for-cobalt-strike-c2) [releases](https://github.com/outflanknl/external_c2) of implementations/discussions around the spec, but they are in a language that I'm not familiar with (**¯\\_(ツ)_/¯**), or do not have the features that I desire.
 
-Keeping the design philosophy of Cobalt Strike in mind, I took it upon myself to construct a modular implementation of the spec that would be easy and straight forward to create new communication channels for.
+Keeping the design philosophy of Cobalt Strike in mind, I decided to construct a modular implementation of the spec that would be easy and straight forward to create new communication channels for.
 
 # Overview
 The framework consists of 3 main parts:
@@ -29,6 +29,7 @@ The framework consists of 3 main parts:
 
 # Server
 The server is the application that brokers communication between the `client` and the `c2 server`, referred to as `third-party Client Controller` within the spec. The server logic is primarily static, but supports verbose and debug output to assist with development:
+
 1. Parse the configuration
 2. Import the specified encoding module
 3. Import the specified transport module
@@ -56,7 +57,7 @@ Let's look at how the server works:
 ## server.py
 Main part of the server is at the root of the `server` folder and upon building, is aptly named `server.py`
 
-Looking at the `main()` function, we can see the server first parses arguments (at this time just `verbose` and `debug` flags), parses a config file, `config.py`, imports the specified `transport` and `encoder` modules, then begins the main logic of communicating to the c2 server and client.
+Looking at the `main()` function, we can see the server first parses arguments (at this time just `verbose` and `debug` flags), parses a config file, `config.py`, imports the specified `transport` and `encoder` modules, and then begins the main logic of communicating to the c2 server and client.
 
 ## config.py
 Distributed with the server in a configuration file, `config.py` that allows us to specify the connection to the c2 server, options passed for the stager, idle time for polling of the transport and c2, which `encoder` and `transport` to use, and output options (which can be specified with flags as well).
