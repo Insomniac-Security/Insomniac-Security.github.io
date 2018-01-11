@@ -7,6 +7,7 @@ Title: Insomniac Security
     <article class="post">
 
       <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
+	---
       <h3>{{ post.date | date_to_string }}</h3>
 
       <div class="entry">

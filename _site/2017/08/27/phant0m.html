@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Experiments with Invoke-Phant0m</title>
+    <link rel="stylesheet" href="/assets/css/style.css?v=04d53a0f8be00a33c17b1a0517d9519bbca5edcd">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="/assets/js/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="/assets/css/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="http://localhost:4000">Home</a></li>
+          
+          <li class="downloads"><a href="https://insomniac-security.github.io/about">About Us</a></li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Experiments with Invoke-Phant0m</h1>
+          
+          <p>Expanding upon Hlldz's Invoke-Phant0m</p>
+          
+          <p style="text-align:center;">
+          <i><span class="credits">27 Aug 2017</span>
+          
+          <span class="credits"> - Jonathan Echavarria</span>
+          
+          </i>
+          </p>
+        </div>
+        <p><a href="https://twitter.com/hlldz">Halil Dalabasmaz</a> recently released <a href="https://github.com/hlldz/Invoke-Phant0m">Invoke-Phant0m</a>, a PowerShell script that walks the thread stacks of the event-log service process and kills event log service threads.</p>
+
+<p>Antiforensics is an area of extreme interest to me, so I decided to pull it down and start experimenting with it.</p>
+
+<h2 id="killing-event-logs">Killing Event Logs</h2>
+<p>The idea of it killing logging is great, and I love the fact that it leaves it as a running process. However, my initial testing sort of killed it flat.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_01_evtkilled.png" alt="invoke-phant0m killing event logs" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Invoke-Phant0m killing event log threads</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>It successfully killed the threads, and I did note that the event log viewer service is running. However, to test this, I’d have to generate an event… So of course, the easiest way to do that is though PowerShell’s <code class="highlighter-rouge">write-eventlog</code>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_02_ps_write_event_log.png" alt="write-eventlog output" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Using write-eventlog to create an event</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>But when I went to go look in the event log for the events, they were there!</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_03_event_viewer.png" alt="event-viewer output" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Output of Event Viewer showing event exists</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>So… why didn’t that work?</p>
+
+<p>Looking at the <a href="https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/write-eventlog">MSDN article for write-eventlog</a>, we can see that it describes the cmdlet as <code class="highlighter-rouge">writes an event to an event log</code>, which must mean that it writes to the actual file itself, and doesn’t actually make use of the event log service. If whatever application you use writes to the event-log service in this way, it should bypass the protections provided by this tool.</p>
+
+<p>I attempted a few actions I normally did that would generate logs (privilege escalations, etc), and it DID successfully prevent writing of events to the event log that way.</p>
+
+<p>The only other caveat I noticed with this was that occasionally the threads can restart, so this needs to be ran periodically on the endpoint to ensure the threads stay down.</p>
+
+<h2 id="expanding-on-thread-killing">Expanding on thread killing</h2>
+<p>That being said, killing threads of a process to prevent it from functioning, while still keeping the process running is a pretty novel way to bypass security measures. I got curious and start to think of other ways this could be used on an engagement.</p>
+
+<p>Eventually, I ended up creating a <a href="https://github.com/Und3rf10w/Invoke-Phant0m/commit/81e6df1de14972e17bc393ab1d2d7c11c722f94a">modified version of Invoke-Phant0m</a> that has the ability to provide you with a list of threads for a given process, and can kill those threads for you.</p>
+
+<h2 id="windows-defender">Windows Defender</h2>
+<p>The classic target to demonstrate this with is Windows Defender. Installed by default on practically every modern Windows system, defender is more of an annoyance than anything. A good first step, it filters out a fair amount of malware that’s “not even trying”, but fails to detect most things with just a little bit of thought put into them.</p>
+
+<p>To start, I enumerated all of the threads running for the <code class="highlighter-rouge">WinDefend</code> service. The modified script supports this by specifying the process name with <code class="highlighter-rouge">-processname</code> and adding the <code class="highlighter-rouge">-enumonly</code> switch:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_04_windefend_enum.png" alt="WinDefend enum" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Enumerating WinDefend threads</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The threads that I was interested in appeared, and are highlighted below:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_05_windefend_threads.png" alt="WinDefend threads" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>WinDefend threads</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The way <code class="highlighter-rouge">invoke-phant0m</code> <a href="https://github.com/hlldz/Invoke-Phant0m/blob/master/Invoke-Phant0m.ps1#L1041">normally works</a> is that it will look for any thread that matches the name <code class="highlighter-rouge">*evt*</code> in the process <code class="highlighter-rouge">eventlog</code>.</p>
+
+<p>I applied the same logic to my modification, so by specifying Mp, any thread matching <code class="highlighter-rouge">*Mp*</code> in the specified <code class="highlighter-rouge">WinDefend</code> process should be killed, which will be all of the threads highlighted above.</p>
+
+<p>By passing the <code class="highlighter-rouge">-threadfilter</code> parameter, you can tell the script which threads to kill for the specified process:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_06_windefend_kill.png" alt="WinDefend killed" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Killing all of the relevant WinDefend threads</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Windows Defender was technically still running, but it certainly wasn’t detecting anything.</p>
+
+<h2 id="carbon-black-response">Carbon Black Response</h2>
+<p>Of course, I had to attempt this on an actual EDR tool, and for this, I chose <a href="https://www.carbonblack.com/products/cb-defense/">Carbon Black Defense</a>.</p>
+
+<p>Enumerating the threads for the <code class="highlighter-rouge">carbonblack</code> service, I could see the ones that I’d be interested in killing are <code class="highlighter-rouge">cb.exe</code>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_07_cb_threads.png" alt="CarbonBlack threads" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Carbon Black threads</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>I ran <code class="highlighter-rouge">invoke-phant0m</code> with a thread filter for <code class="highlighter-rouge">cb</code> and eagerly awaited the results:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_08_cb_killed.png" alt="CarbonBlack killed" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Killing all of the relevant Carbon Black threads</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Finally, using <a href="https://docs.microsoft.com/en-us/sysinternals/downloads/process-explorer">Process Explorer</a>, I verified that all of the threads in Carbon Black were killed:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_09_procexp.png" alt="ProcExp" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Viewing Carbon Black with Process Explorer</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Normally, this would be pretty exciting. Unfortunately however, looking at the Carbon Black console revealed a telling matter:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><img src="http://localhost:4000/static/images/2017_08_27_phant0m/phant0m_10_cb_console.png" alt="CarbonBlack Console" /></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><em>Sensor Status on the CB Response Console</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Unfortunately, the sensor status was marked offline, and a tamper alert was generated on the console for the sensor, so while further actions couldn’t be detected or alerted upon anymore, this one was caught, which should make any competent IR/HUNT team suspicious. Realistically though, in most environments, these alerts are generated often, and rarely investigated, so it’s entirely possible it could be ignored.</p>
+
+<p>It’s entirely possible that only killing specific threads will kill just the monitoring portion of the process, but that would require some further experimentation.</p>
+
+<p>I’m confident that not many tools are well defended against having their threads killed in this fashion. Feel free to give my <a href="https://github.com/Und3rf10w/Invoke-Phant0m/blob/master/Invoke-Phant0m.ps1">modified version of Invoke-Phant0m</a> a spin against whatever you have and see how it holds up. This is a great utility, and I foresee it being used extensively in all of our further campaigns.</p>
+
+      </section>
+
+    </div>
+
+    
+  </body>
+</html>

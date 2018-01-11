@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>We're All Script Kiddies 1 - Domains for Evil</title>
+    <link rel="stylesheet" href="/assets/css/style.css?v=04d53a0f8be00a33c17b1a0517d9519bbca5edcd">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="/assets/js/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="/assets/css/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="http://localhost:4000">Home</a></li>
+          
+          <li class="downloads"><a href="https://insomniac-security.github.io/about">About Us</a></li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>We're All Script Kiddies 1 - Domains for Evil</h1>
+          
+          <p>Quickly grabbing domains for phishing or other purposes with as little effort as possible.</p>
+          
+          <p style="text-align:center;">
+          <i><span class="credits">09 Jun 2017</span>
+          
+          <span class="credits"> - David E. Switzer</span>
+          
+          </i>
+          </p>
+        </div>
+        <h2 id="intro">Intro</h2>
+
+<p><em>Preface: This was a talk I gave at BSides: Orlando 2017.  Initially I thought this would fill out a good 30 minutes, but ended up being closer to 10 or 15. Oops. If you’d like to see me walk around and talk about it, the video is available at <a href="https://www.youtube.com/watch?v=Jz-wqFZ5T6w">BSides:Orlando’s Youtube channel</a>.</em></p>
+
+<p>My day job is being part of a red team.  Yes, hacking for a living.  Cue the stock photos of hoodie-laden people in a dark room, wearing gloves and typing away.  gloves and typing away.</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/1_ianandjonathan.png" alt="Ian and Jonathan, doing their Ian and Jonathan thing" /></p>
+
+<p>Our track record is at 100%.   Just like saying “I hack people for a living”, that statement conjures up an exciting, awesome vision that’s a bit different than reality.  The boring truth is… it’s all about phishing.  With enough research, phishing gets you in every time.</p>
+
+<p>In the end, we’re all script kiddies.</p>
+
+<h2 id="phishing-and-evil-domains">Phishing and Evil Domains</h2>
+
+<p>It’s safe to assume if you’re reading this article, you’ve probably done some phishing.  The first few times it works, it’s exciting.  After a while it becomes a bit of a bore.  The initial access is awesome, but a lot of the setup and prep is tedious.</p>
+
+<p>This idea/blog/talk started from a discussion I had with a lead analyst at my day job (Hi Casey!).  The discussion was about how to detect evil domains.</p>
+
+<p>His proposed idea of detecting evil domains was:</p>
+<ul>
+  <li><strong>TLD</strong> - “.com” and “.net” were thought to host less evil than a “.at” domain.</li>
+  <li><strong>Age</strong> - Was this domain created last week, or has it been around a while?</li>
+  <li><strong>Categorization</strong> - What do various web-proxy/scanning companies say the site is?  Ex: Bluecoat, etc.</li>
+</ul>
+
+<p><em>I didn’t agree with the TLD portion, and yes, we know about domain fronting, but that’s not what this blog/talk was about :).</em></p>
+
+<h2 id="testing-the-theory">Testing the Theory</h2>
+
+<p>I was curious about the theory.  I randomly picked a domain I’d bought for an engagement/client.</p>
+
+<ul>
+  <li><strong>TLD check</strong>:  It’s a “.com”.</li>
+  <li><strong>Age check</strong>:  Six months old, it’s good!</li>
+</ul>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/2_curiousdomaincheck.jpg" alt="A random domain" /></p>
+
+<ul>
+  <li><strong>Categorization check</strong>:</li>
+</ul>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/3_bluecoat.png" alt="Bluecoat" /></p>
+
+<p>.. Huh?  How is this categorized, I’ve never used nor setup this domain?</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/4_101domainparkpage.png" alt="101 Domains parked page" /></p>
+
+<p>While I’d never used this domain, it turns out that Bluecoat had crawled the “website”, and the parked-page from 101Domains was keyword-y enough to qualify it as “Technology/Internet”.   Neat!</p>
+
+<p>So, let’s review.  This domain I’ve never used meets all three categories:  It’s a “trustworthy” TLD, it’s not brand new, and it’s been categorized.  We’re golden!</p>
+
+<h2 id="so-what-its-a-parked-domain">So what, it’s a parked domain?</h2>
+
+<p>I get it.  While this has been an amusing analysis of a domain I bought a while back, who cares?  Anyone who looked at this page would see it’s a parked page, and obviously suspect.  This feels like over-analysis of a corner case example.</p>
+
+<p>My thought was… <strong>how can we do this in a more believable way, that’s the least “labor” intensive</strong>?</p>
+
+<h2 id="domain-aging-or-go-vintage-">Domain Aging or go <em>Vintage</em> ?</h2>
+
+<p>In many ways, buying the domains yourself and let them “age” is the preferable route.</p>
+
+<p>But that takes planning ahead, and time.   Sometimes that just isn’t possible, so screw it.  Let’s go vintage!</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/5_vintagehipsters.png" alt="We all wanna be hipsters" /></p>
+
+<h2 id="finding-expired-domains">Finding Expired Domains</h2>
+
+<p>Manually searching for expired domains seemed like a lot of work, so let’s avoid that.  Enter “ExpiredDomains”</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/6_expireddomains.png" alt="Expired Domains" /></p>
+
+<p>Sign up for an account – it’s free and provides better search options.</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/7_expireddomains2.png" alt="Expired Domains" /></p>
+
+<p>Results show you the “birth dates”, 12 month Google search averages, and when the domain was dropped.</p>
+
+<h2 id="a-personal-internet-rule">A Personal Internet Rule</h2>
+
+<p>“Wait long enough, and someone will code it for you.”</p>
+
+<p>While digging through domains, I thought “OK, maybe I should just code something to do this for me”, and my personal internet rule hit.   I ran across <a href="https://github.com/minisllc/domainhunter">DomainHunter</a> by Joe Vest (@joevest) and Andrew Chiles (@andrewchiles).</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/8_domainhunter.png" alt="Domain Hunter" /></p>
+
+<p>It automates finding a domain based on keyword, and even checks it against Bluecoat and IBM XForce to see if the domain is categorized.   Awesome!</p>
+
+<h2 id="keeping-it-orlando">Keeping It Orlando</h2>
+
+<p>As this was a talk at <a href="http://bsidesorlando.org">BSides: Orlando</a>, I decided to keep it Orlando themed, and searched for any related domains.</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/9_treeserviceorlando.png" alt="TreeServiceOrlando.net" /></p>
+
+<p>Perfect.  I now have a domain.  But it’d yet again be a parked page, which would alert anyone who looked at it that it was likely a “bad domain”.  So how can we add some content to this, without much effort?</p>
+
+<h2 id="wayback-machine-to-the-rescue">Wayback Machine To The Rescue</h2>
+
+<p>Why make content when someone has already done that for you?</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/10_waybackmachine.png" alt="TreeServiceOrlando.net" /></p>
+
+<p>Perfect!</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/11_waybackmachine2.png" alt="TreeServiceOrlando.net" /></p>
+
+<p>A tip for stealing content from the Wayback Machine.</p>
+
+<p>If you want this url: 
+https://web.archive.org/web/20121107182523/http://www.treeserviceorlando.net
+but without the WebArchive toolbar?</p>
+
+<p>Add “id_” before the referenced url:
+https://web.archive.org/web/20121107182523<strong>id_</strong>/http://www.treeserviceorlando.net</p>
+
+<p>Please note:  The Wayback Machine doesn’t download jpgs or stylesheets when you add the “id_” to the url.   Simply wget the regular version (with the toolbar, jpgs and style sheets), then wget the “id_” version later.   It will write over the htmls w/ versions that don’t include the toolbar, and leave the rest in place.</p>
+
+<p>We set up the DNS records, uploaded the content, and now we have a website:</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/12_treeserviceorlando.png" alt="TreeServiceOrlando.net" /></p>
+
+<p>So, what can we do to make this even more legitimate looking?</p>
+
+<h2 id="lets-encrypt--sure-why-not">“Let’s Encrypt” .. Sure, Why Not?</h2>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/13_letsencrypt.png" alt="LetsEncrypt" /></p>
+
+<p>Let’s Encrypt makes it insanely easy.  They even provide Linux distribution specific configuration tools.  “certbot –apache”, hit enter a few times, and you’re left with your newly encrypted website!  It even sets up your Apache configs!</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/14_letsencrypt2.png" alt="LetsEncrypt" /></p>
+
+<p>Neato, we’re secure!</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/15_certtest.png" alt="Encrypted" /></p>
+
+<h2 id="lets-review">Let’s Review</h2>
+
+<ul>
+  <li><strong>Categorization</strong> - Yep!  Bluecoat thinks it is a vehicle related site.</li>
+  <li><strong>TLD</strong> - Yep! A shiny, trust worthy dot net!</li>
+  <li><strong>BONUS ENCRYPTION CERT</strong> - Totally trustworthy.</li>
+  <li><strong>Age</strong> ..</li>
+</ul>
+
+<p>Typing “domain age history” into Google, and hitting “I Feel Lucky” turned up a service from <a href="http://www.webconfs.com/web-tools/domain-age-tool">WebConfs</a> that lets you see the age of domains.</p>
+
+<p><img src="http://localhost:4000/static/images/2017_06_09_scriptkiddie1/16_agecheck.jpg" alt="Age" /></p>
+
+<p>Obviously these sorts of tools (age checker, or Bluecoat, or..) don’t check every single domain every day, so you have a fantastic chance of having old data around.  This site things the domain is <strong>over 7 years old</strong>.</p>
+
+<p>So now we’re left with a domain that cost $17.16, can be hosted on a cheap or free hosting service, has legitimate content and some service thinks it is 7 years old.  <em>And this was all done in about a half hour.</em></p>
+
+<p>Sometimes playing the scriptkiddie works out.</p>
+
+
+      </section>
+
+    </div>
+
+    
+  </body>
+</html>

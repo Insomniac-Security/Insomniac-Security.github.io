@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Hardware 1 - Finding Ground</title>
+    <link rel="stylesheet" href="/assets/css/style.css?v=04d53a0f8be00a33c17b1a0517d9519bbca5edcd">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="/assets/js/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="/assets/css/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="http://localhost:4000">Home</a></li>
+          
+          <li class="downloads"><a href="https://insomniac-security.github.io/about">About Us</a></li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Hardware 1 - Finding Ground</h1>
+          
+          <p>How to find a device's serial console without a lot of expensive gear.</p>
+          
+          <p style="text-align:center;">
+          <i><span class="credits">10 Aug 2017</span>
+          
+          <span class="credits"> - David E. Switzer</span>
+          
+          </i>
+          </p>
+        </div>
+        <h2 id="intro">Intro</h2>
+
+<p>Going under the hood with hardware can be fun, but can be somewhat intimidating.  Experience has shown us that people tend to think hardware experimentation is harder than it actually is, and this pushes them from jumping into the fun. People often think that expensive JTAG readers or logic analyzers are required, along with confusing software to decode odd/complex protocols.  While that is somewhat true (you can get cheaper hardware, and the software isn’t that complex!), there is a simpler way to start learning about hardware: the serial interface.</p>
+
+<p>A lot of devices these days are simply small/embedded Linux systems, and Linux systems will usually have one thing in common: a console.  In “olden days”, this would be the monitor and keyboard plugged into the system, allowing you to see it boot, or directly interact with it. Embedded devices don’t tend to have keyboard ports directly accessible (some do!), but they do often have serial/UART ports.   This is often the case with other (non-Linux) embedded devices, for the same reason: to allow you to interact with the device, see it boot and/or debug any issues.</p>
+
+<p>Working with a UART/serial port has a few benefits: namely it’s easier to find, and the equipment to interface with it is vastly cheaper.   You only need two pieces of equipment besides your laptop: a multimeter (~ 8 - 100+ $USD) and a USB UART adapter (~ 2 - 5 $USD). Essentially, this can be done for around ten to fifteen dollars (USD).</p>
+
+<h2 id="step-1-finding-a-likely-candidate">Step 1&gt; Finding a likely candidate.</h2>
+
+<p>Typically a serial-only interface (unless obfuscated to attempt to hamper reverse engineering attempts) will be a set of 3 - 6 pins, close together.  Sometimes in a row, or 3x3.</p>
+
+<p><img src="http://localhost:4000/static/images/2017_08_10_hardware1/1_fullphonepic.png" alt="Polycom VVX300 phone" /></p>
+
+<p>The device in this example is a Polycom VVX300 phone.	  We opened up the device and scanned the board.   There was a set of 20 unpopulated pads in a 10x10 format.  This seemed like far too many pins to be a serial interface, and if we had more equipment (such as a JTAGulator, a device designed by Joe Grand who also has a fantastic hardware course) to sort through it, maybe.. but this is likely either an expansion port (add on additional board for expanded features?) or some sort of JTAG/etc port.</p>
+
+<p>Looking around more, we find this 3x3 pads (in a convenient “female” factor).    This is the only set of obvious pins/pads:</p>
+
+<p><img src="http://localhost:4000/static/images/2017_08_10_hardware1/2_serialportinside.png" alt="Polycom VVX300 Serial Port" /></p>
+
+<p>Digging through some manuals, we find that this is used for more complex headsets.  And is blatantly called “serial port” in the manual.   And is accessible outside of the case without opening it up.  So yeah.. cracking the case was..er.. not needed… !@#%.</p>
+
+<p>Now we need to find 3 pins: Ground, Transmit (TX) and Receive (RX).   First, the ground.</p>
+
+<p>For the sake of simplicity (namely saving me from fumbling in “The Gimp” trying to draw boxes for an hour), we will use this diagram to explain the pin #s as we will describe:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-------------
+| 1 | 3 | X |
+| 2 | 4 | 5 |
+-------------
+</code></pre></div></div>
+
+<h2 id="step-2-find-the-ground">Step 2&gt; Find the Ground.</h2>
+
+<p>This requires a basic multimeter set to check continuity (this symbol typically looks like an arrow pointing at a vertical line with a line through it, often with a “volume” graphic near it).</p>
+
+<p>First, find a known ground on the device.  In general, you want to find a ground as close to your interface as possible.  Screws/metal mounts are typically a source of ground.  Sometimes you can even find an obvious, large trace that connects to a known ground (such as corner screws on a board), then trace them back to a certain pin on the suspected serial/UART port (not the case here).  In a pinch you can use the ground on the power input on the device.</p>
+
+<p>Now, check each pin inside the suspected serial/UART interface until you hear your multimeter beep.
+Success, we’ve found the ground!</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-------------
+| 1 | 3 | X |	1 = Ground	3 = ??
+| 2 | 4 | 5 |	2 = ??		4 = ??		5 = ??
+-------------
+</code></pre></div></div>
+
+<h2 id="step-3-find-the-transmit-tx-pin">Step 3&gt; Find the Transmit (TX) pin.</h2>
+
+<p>Time to bust out the UART USB adapter.</p>
+
+<p><strong>WARNING:  <em>There is always a chance that plugging random pins into a device that you plug into your computer COULD DESTROY YOUR COMPUTER.   We take 0 responsibility, you are ENTIRELY ON YOUR OWN.</em></strong></p>
+
+<p>That said, most small/consumer devices have low enough power going through them that it won’t impact anything, and using cheap USB UART adapters such as this have an added benefit – they will “lose their magic smoke” and stop working before sending power to your computer, but again – your mileage may vary, the objects in the mirror are closer than they appear, <strong>WE ARE NOT RESPONSIBLE.</strong></p>
+
+<p><img src="http://localhost:4000/static/images/2017_08_10_hardware1/3_uartadapter.png" alt="Cheapo USB UART adapter" /></p>
+
+<p>We know what pin to connect to Ground (Pin1 -&gt; GND).   Now to find TX (transmit FROM the device), we will plug into RX on the adapter (to receive on the PC).<br />
+Note: Do not connect any other pins, especially the VCC pin unless the device specifically needs power from the serial connection.  If you’ve plugged it in, or put in batteries – it probably doesn’t need VCC!</p>
+
+<p>Now you need to determine what “name” the USB UART device is on your system.  If you’re on Linux, try <code class="highlighter-rouge">dmesg|tail</code>, and look for references to /dev/ttyUSBX (probably /dev/ttyUSB0).   After this, you need to run a terminal program to connect to the interface.  If on Linux, we recommend “Screen” for simplicity:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>screen /dev/ttyUSB0 115200
+</code></pre></div></div>
+
+<p>This connects to /dev/ttyUSB0 with a baudrate of 115200.   This baudrate is a complete guess. Now, we determine the transmit pin in a very slow, scientific way.   By that, we guess a pin on the device, then plug it into RX on the USB UART.</p>
+
+<p><img src="http://localhost:4000/static/images/2017_08_10_hardware1/4_uarthookedup.png" alt="Cheapo USB UART adapter connected to phone" /></p>
+
+<p>If a device is very “chatty”, you can try any pins to see if you get any text or noise on your terminal program. If you’ve guessed the baudrate right, and you’re lucky – you should see some legible text.  If the baudrate is off, you likely will see junk.</p>
+
+<p><img src="http://localhost:4000/static/images/2017_08_10_hardware1/5_badbaudrate.png" alt="Gibberish due to bad baudrate" /></p>
+
+<p><img src="http://localhost:4000/static/images/2017_08_10_hardware1/6_goodbaudrate.png" alt="Legible text thanks to the right baudrate" /></p>
+
+<p>If a device isn’t very “chatty”, they tend to talk when booting up.   Power off your device, pick a pin to test, connect it to RX on your USB UART, power the device on and watch your terminal.   Rinse and repeat until you find a pin on the device that is spewing information on boot.</p>
+
+<p>In most cases with equipment (especially consumer devices), the baudrate will be fairly standard.  115200 and 9600 baud are most frequently used, but the other historical standards are possible (300, 1200, 2400, 4800, 19200, 38400 and 57600).   Repeat the power off/on test until you see text come up that’s legible.</p>
+
+<p>In the case of the Polycom phone, it was pin 3, and it was 115200 baud.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-------------
+| 1 | 3 | X |	1 = Ground	3 = TX
+| 2 | 4 | 5 |	2 = ??		4 = ??		5 = ??
+-------------
+</code></pre></div></div>
+<p><em>115200 baud, n81</em></p>
+
+<h2 id="step-4-find-the-receive-rx-pin">Step 4&gt; Find the Receive (RX) pin.</h2>
+<p>Note: Not all devices will take input, so your attempts to find a receive pin may be fruitless.</p>
+
+<p>As “RX” is receiving TO the device, we need to plug into the “TX” (Transmit).  Typically RX will be a pin off from TX, so a coin flip between pin 2 and pin 4 leads us to try pin 4.</p>
+
+<p>The super complex way to test receive:  reboot the device so you see it boot, let it stop sending text… and hit enter.  See if the terminal advances a line or two (thus it received and echoed back the CarriageReturn/LineFeed sent by the enter key).   If the device accepts input, typically this will show you a response when you’ve hit the right receive pin.</p>
+
+<p>And our first guess worked – pin 4 is receive.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-------------
+| 1 | 3 | X |	1 = Ground	3 = TX
+| 2 | 4 | 5 |	2 = ??		4 = RX		5 = ??
+-------------
+</code></pre></div></div>
+<p><em>115200 baud, n81</em></p>
+
+<p>Now we have all the information we need to talk to this device via the UART port!</p>
+
+<h2 id="step-5--wait-what-is-step-5-we-figured-out-the-connectivity">Step 5&gt; .. wait, what is step 5, we figured out the connectivity?!</h2>
+<p>Step five is basically.. start to play with the device you’re now communicating with.
+First thing to try is rebooting the device, and watching the boot up process.  Some devices will let you interrupt the boot process, and go into some sort of config/debug process or even a Linux/Unix “single user mode”.</p>
+
+<p>Another option is to let it boot and see what prompts it gives you.  Non-Linux devices may give you access to a configuration menu/setup program that could be helpful.</p>
+
+<p><strong>Looking for the tools?   Here’s a few cheapo eBay examples.</strong> 
+Standard disclaimers:
+<em>We don’t know them, we don’t endorse them, we can’t comment on their quality, and we don’t get a cut from your purchase.   These are just inexpensive examples quickly found on eBay:</em></p>
+
+<ol>
+  <li>
+    <p>USB UART: <a href="http://www.ebay.com/itm/USB-2-0-to-TTL-UART-6PIN-CP2102-Module-Serial-Converter-T1-/252583963023">CP2102 USB UART Adapter</a>
+While not the adapter used in the pics above, I’ve bought a ton of these and had a good success rate.
+Also I appreciate separate pins for 3.3 vs 5v instead of having to remember to switch a jumper.</p>
+  </li>
+  <li>
+    <p>Alternative USB UART: <a href="http://www.ebay.com/itm/Adapter-STC-USB-TTL-CH340G-Converter-Module-replace-PL2303-CP2102-Z3-New-Design-/391646300972">CH340G USB UART Adapter</a> 
+Again, haven’t used this, but it is cheap and will probably work.</p>
+  </li>
+  <li>
+    <p>Multimeter: <a href="http://www.ebay.com/itm/New-Digital-Multimeter-XL830L-Volt-Meter-Ammeter-Ohmmeter-Yellow-Tester-LOT-FLY/302328602729">XL830L Multimeter</a>
+Never touched this one, just a cheapo that’d work for super basic stuff, such as continuity testing.
+Probably worth researching ‘em and investing a bit more than this if you think you may be interested in doing more w/ hardware, but if not, this is probably a great entry level multimeter.</p>
+  </li>
+</ol>
+
+      </section>
+
+    </div>
+
+    
+  </body>
+</html>
