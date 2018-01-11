@@ -10,7 +10,7 @@ Today, I am officially releasing the alpha version of my implementation for Coba
 
 This post will discuss how to use it, and provide insight on how to build your own `transport` and `encoder` modules to add your desired functionality.
 
-You can access the framework here: [https://github.com/Und3rf10w/external_c2_framework](https://github.com/Und3rf10w/external_c2_framework)
+You can access the framework here: https://github.com/Und3rf10w/external_c2_framework
 
 # Intro
 Personally, I give nothing but praise to Cobalt Strike's design. It's a great tool, designed to be very modular and modifiable, and compared to other offerings on the market, very reasonably priced (e.g. not $50k). With a well-featured base product, it also offers a scripting language, [Aggressor](https://www.cobaltstrike.com/aggressor-script/index.html), which is essentially Rafael Mudge's Java scripting language, [Sleep](http://sleep.dashnine.org/manual/). I've always said that if you're willing to put in the work to create Aggressor scripts and other minor modifications to fit your needs, you can easily enhance the value of Cobalt Strike to that of tools that cost more than 15 times what you paid for it.
