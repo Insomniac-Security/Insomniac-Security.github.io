@@ -1,6 +1,6 @@
 ---
 title: External C2 framework for Cobalt Strike
-published: false
+published: true
 layout: post
 description: Alpha release of External C2 framework
 author: Jonathan Echavarria
@@ -8,12 +8,12 @@ author: Jonathan Echavarria
 
 Today, I am officially releasing the alpha version of my implementation for Cobalt Strike's [external c2 spec](https://www.cobaltstrike.com/downloads/externalc2spec.pdf). Currently, it is lacking the builder routine and a few additional features that will be implemented at a later time, but what is available will be a provides a good idea of where this project will go, and hopefully enhance your experience.
 
-This post will discuss how to use it, and provide a tutorial on how to build your own `transport` and `encoder` modules to add your desired functionality.
+This post will discuss how to use it, and provide insight on how to build your own `transport` and `encoder` modules to add your desired functionality.
 
 You can access the framework here: https://github.com/Und3rf10w/external_c2_framework
 
 # Intro
-Personally, I give nothing but praise to Cobalt Strike's design. It's a great tool, designed to be very modular and modifiable, and compared to other offerings on the market, very reasonably prices (e.g. not $50k). With a well-featured base product, it also offers a scripting language, [Aggressor](https://www.cobaltstrike.com/aggressor-script/index.html), which is essentially Rafael Mudge's Java scripting language, [Sleep](http://sleep.dashnine.org/manual/). I've always said that if you're willing to put in the work to create Aggressor scripts and other minor modifications to fit your needs, you can easily enhance the value of Cobalt Strike to that of tools that cost more than 15 times what you paid for it.
+Personally, I give nothing but praise to Cobalt Strike's design. It's a great tool, designed to be very modular and modifiable, and compared to other offerings on the market, very reasonably priced (e.g. not $50k). With a well-featured base product, it also offers a scripting language, [Aggressor](https://www.cobaltstrike.com/aggressor-script/index.html), which is essentially Rafael Mudge's Java scripting language, [Sleep](http://sleep.dashnine.org/manual/). I've always said that if you're willing to put in the work to create Aggressor scripts and other minor modifications to fit your needs, you can easily enhance the value of Cobalt Strike to that of tools that cost more than 15 times what you paid for it.
 
 The only area I thought it was lacking was that the data channels that the beacon payload were somewhat limited, which is a major feature of other offerings in the space. Imagine my surprise, and excitement, [when I learned about the external c2 specification](https://blog.cobaltstrike.com/2017/10/03/kits-profiles-and-scripts-oh-my/)!
 
@@ -191,3 +191,48 @@ Take a look at the follow tables, which detail share functionality between the c
 
 If you want to modify the way the client loads the beacon stager, you can modify the logic of the `start_beacon()` function. Just ensure it returns a handle to the beacon's named pipe.
 
+# Running it
+First, determine which transport and encoding module you'd like to use. We'll use `transport_gmail` and `encoder_b64url` for the following example.
+
+Next, modify `server/config.py` to suit your needs, ensuring the `ENCODER_MODULE` and `TRANSPORT_MODULE` are properly configured and pointed to your desired modules:
+
+## Sample config.py
+```python
+EXTERNAL_C2_ADDR = "127.0.0.1"
+EXTERNAL_C2_PORT = "2222"
+C2_PIPE_NAME = "foobar"
+C2_BLOCK_TIME = 100
+C2_ARCH = "x86"
+IDLE_TIME = 5
+ENCODER_MODULE = "encoder_b64url"
+TRANSPORT_MODULE = "transport_gmail"
+verbose = False
+debug = False
+```
+
+Next, modify the configuration section for your selected `transport` and `encoder` module.
+
+Ensure that `client/mechanism/$mechanism_client.py`'s configuration section matches with any configurations you have defined thus far.
+
+### Server
+On the machine running the server, execute:
+
+`python server.py`
+
+For more verbose output, you may run:
+
+`python server.py -v`
+
+For more verbose output and additional output that is useful for debugging, you may run:
+
+`python server.py -d`
+
+
+### Client
+Execute the included client dll compilation script:
+
+`./compile_dll.sh`
+
+Next, distribute the client and dll the targeted endpoint, and execute it.
+
+If everything worked, a new beacon will be registered within the Cobalt Strike console that you may interact with.
