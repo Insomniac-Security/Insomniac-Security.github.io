@@ -18,7 +18,7 @@ At this point, I realized that we were basically red/blue teaming homes, and we 
 
 ## The Promised Slides/Files [tm]
 
-Slides:["Redteaming The Traphouse"](https://github.com/Insomniac-Security/Insomniac-Security.github.io/blob/master/static/docs/BsidesOrl2018_Redteaming-the-traphouse.pdf)
+Slides: ["Redteaming The Traphouse"](https://github.com/Insomniac-Security/Insomniac-Security.github.io/blob/master/static/docs/BsidesOrl2018_Redteaming-the-traphouse.pdf)
 
 ["house_hide.py"](https://github.com/violentlydave/GatosGuardianes/blob/master/house_hide.py) - the program to spew out probes from fake IoT devices.
 ["callsomeonesaysomething.sh"](https://github.com/violentlydave/GatosGuardianes/blob/master/callsomeonesaysomething.sh) - a script to automate sending synthesized voice calls for alerts/etc
@@ -28,18 +28,11 @@ Slides:["Redteaming The Traphouse"](https://github.com/Insomniac-Security/Insomn
 Some of the fun projects and software we discussed:
 
 [Home Assistant](https://www.home-assistant.io/) - A vendor agnostic middleman for your home-automation needs!
-
 [RTL-SDR.com](http://www.rtl-sdr.com) - A fantastic SDR site.  I guess I didn't need to hotlink that, really.
-
 [BLEah](https://github.com/evilsocket/bleah) - BTLE sniffer/prober/all around party good time.
-
 [Killerbee](https://github.com/riverloopsec/killerbee) - Tools for attacking Zigbee.
-
 [Killerzee](https://github.com/riverloopsec/killerzee) - Tools for attacking Z-Wave.
-
 [RTL-AMR](https://github.com/bemasher/rtlamr) - RTL-SDR receiver for decoding AMR power meters.
-
 [GQRX](http://gqrx.dk) - A GnuRADIO based graphical radio receiver.
-
 [URH](https://github.com/jopohl/urh) - Universal Radio Hacker - for capturing, analzying and replaying RF signals.
 
