@@ -29,12 +29,12 @@ Slides: ["Redteaming The Traphouse"](https://github.com/Insomniac-Security/Insom
 
 Some of the fun projects and software we discussed:
 
-[Home Assistant](https://www.home-assistant.io/) - A vendor agnostic middleman for your home-automation needs!
-[RTL-SDR.com](http://www.rtl-sdr.com) - A fantastic SDR site.  I guess I didn't need to hotlink that, really.
-[BLEah](https://github.com/evilsocket/bleah) - BTLE sniffer/prober/all around party good time.
-[Killerbee](https://github.com/riverloopsec/killerbee) - Tools for attacking Zigbee.
-[Killerzee](https://github.com/riverloopsec/killerzee) - Tools for attacking Z-Wave.
-[RTL-AMR](https://github.com/bemasher/rtlamr) - RTL-SDR receiver for decoding AMR power meters.
-[GQRX](http://gqrx.dk) - A GnuRADIO based graphical radio receiver.
-[URH](https://github.com/jopohl/urh) - Universal Radio Hacker - for capturing, analzying and replaying RF signals.
+[Home Assistant](https://www.home-assistant.io/) - A vendor agnostic middleman for your home-automation needs!  
+[RTL-SDR.com](http://www.rtl-sdr.com) - A fantastic SDR site.  I guess I didn't need to hotlink that, really.  
+[BLEah](https://github.com/evilsocket/bleah) - BTLE sniffer/prober/all around party good time.  
+[Killerbee](https://github.com/riverloopsec/killerbee) - Tools for attacking Zigbee.  
+[Killerzee](https://github.com/riverloopsec/killerzee) - Tools for attacking Z-Wave.  
+[RTL-AMR](https://github.com/bemasher/rtlamr) - RTL-SDR receiver for decoding AMR power meters.  
+[GQRX](http://gqrx.dk) - A GnuRADIO based graphical radio receiver.  
+[URH](https://github.com/jopohl/urh) - Universal Radio Hacker - for capturing, analzying and replaying RF signals.  
 
