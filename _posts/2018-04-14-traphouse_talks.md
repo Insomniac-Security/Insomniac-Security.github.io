@@ -1,3 +1,10 @@
+---
+title: Red and Blue Teaming a Modern House
+published: true
+layout: post
+description: Talks on protecting your home.. or breaking into one.
+author: David E. Switzer
+---
 #Red and Blue Teaming a Modern Home
 
 
