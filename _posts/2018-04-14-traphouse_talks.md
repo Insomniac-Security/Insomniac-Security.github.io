@@ -27,8 +27,6 @@ More to come on this topic -- including a future blog going over some of the ite
 
 ## Projects referenced in the slides:
 
-Some of the fun projects and software we discussed:
-
 [Home Assistant](https://www.home-assistant.io/) - A vendor agnostic middleman for your home-automation needs!  
 [RTL-SDR.com](http://www.rtl-sdr.com) - A fantastic SDR site.  I guess I didn't need to hotlink that, really.  
 [BLEah](https://github.com/evilsocket/bleah) - BTLE sniffer/prober/all around party good time.  
