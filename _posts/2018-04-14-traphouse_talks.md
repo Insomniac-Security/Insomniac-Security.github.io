@@ -2,12 +2,9 @@
 title: Red and Blue Teaming a Modern House
 published: true
 layout: post
-description: Talks on protecting your home.. or breaking into one.
+description: Talks on protecting your home or breaking into one.
 author: David E. Switzer
 ---
-#Red and Blue Teaming a Modern Home
-
-
 ##Intro
 
 A couple years ago, I did a talk at BSides:Orlando called ["Breadcrumbs"](https://www.youtube.com/watch?v=HzQHWUM8cNo).   It was about collecting wifi probes, semi-auto sorting out which is which (who, more accurately), and alerting you when a few people showed up.   This was entirely born out of having a boss that worked out of Canada regularly showing up to the office -- surprise!  Jonathan and I needed protection!
