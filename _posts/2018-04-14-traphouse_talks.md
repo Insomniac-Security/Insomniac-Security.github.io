@@ -22,7 +22,7 @@ More to come on this topic -- including a future blog going over some of the ite
 
 Slides: ["Redteaming The Traphouse"](https://github.com/Insomniac-Security/Insomniac-Security.github.io/blob/master/static/docs/BsidesOrl2018_Redteaming-the-traphouse.pdf)  
 ["house_hide.py"](https://github.com/violentlydave/GatosGuardianes/blob/master/house_hide.py) - the program to spew out probes from fake IoT devices.  
-["callsomeonesaysomething.sh"](https://github.com/violentlydave/GatosGuardianes/blob/master/callsomeonesaysomething.sh) - a script to automate sending synthesized voice calls for alerts/etc.
+["callsomeonesaysomething.sh"](https://github.com/violentlydave/GatosGuardianes/blob/master/callsomeonesaysomething.sh) - a script to automate sending synthesized voice calls for alerts/etc.  
 [ZWave captures from Jonathan's Wink System](https://www.youtube.com/watch?v=GL-8XuoxuaQ) - ZWave captures used for replay attacks mentioned in the talk.  
 
 ## Projects referenced in the slides:
