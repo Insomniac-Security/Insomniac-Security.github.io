@@ -22,8 +22,8 @@ More to come on this topic -- including a future blog going over some of the ite
 
 Slides: ["Redteaming The Traphouse"](https://github.com/Insomniac-Security/Insomniac-Security.github.io/blob/master/static/docs/BsidesOrl2018_Redteaming-the-traphouse.pdf)
 
-["house_hide.py"](https://github.com/violentlydave/GatosGuardianes/blob/master/house_hide.py) - the program to spew out probes from fake IoT devices.
-["callsomeonesaysomething.sh"](https://github.com/violentlydave/GatosGuardianes/blob/master/callsomeonesaysomething.sh) - a script to automate sending synthesized voice calls for alerts/etc
+["house_hide.py"](https://github.com/violentlydave/GatosGuardianes/blob/master/house_hide.py) - the program to spew out probes from fake IoT devices.  
+["callsomeonesaysomething.sh"](https://github.com/violentlydave/GatosGuardianes/blob/master/callsomeonesaysomething.sh) - a script to automate sending synthesized voice calls for alerts/etc.
 
 ## Projects referenced in the slides:
 
