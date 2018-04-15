@@ -15,6 +15,8 @@ At BSides:Tampa 2018, we presented a talk called ["Modern Day Vandals and Thieve
 
 At this point, I realized that we were basically red/blue teaming homes, and we embraced it.   Thus Bsides:Orlando 2018's talk "Redteaming the Traphouse".  This combines some aspects of all the talks, adds some extra ideas, some new stuff about an alarm system that pulled us down a rabbit hole, and some other random toys.
 
+More to come on this topic -- including a future blog going over some of the items in these talks.  Let us know if you have any questions!
+
 
 ## The Promised Slides/Files [tm]
 
