@@ -34,5 +34,5 @@ More to come on this topic -- including a future blog going over some of the ite
 [Killerzee](https://github.com/riverloopsec/killerzee) - Tools for attacking Z-Wave.  
 [RTL-AMR](https://github.com/bemasher/rtlamr) - RTL-SDR receiver for decoding AMR power meters.  
 [GQRX](http://gqrx.dk) - A GnuRADIO based graphical radio receiver.  
-[URH](https://github.com/jopohl/urh) - Universal Radio Hacker - for capturing, analzying and replaying RF signals.  
+[URH](https://github.com/jopohl/urh) - Universal Radio Hacker - for capturing, analyzing and replaying RF signals.  
 
