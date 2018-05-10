@@ -1,6 +1,6 @@
 ---
 title: BobLobBlob
-published: false
+published: true
 layout: post
 description: Experiments with GitHub and binary blobs
 author: Jonathan Echavarria
@@ -18,7 +18,7 @@ To start, I created a new GitHub repository, cloned it to my machine, and create
 First, we will create a file we want to hide:
 
 ```bash
-# cat hiddenfile.sh
+# cat hiddenfil.esh
 echo "secret malicious code has been executed"
 # git add hiddenfile.sh
 ```
