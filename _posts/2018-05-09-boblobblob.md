@@ -106,7 +106,7 @@ ayyyyyylmaowtfbbq
 [master e24a8e6] added my password
  1 file changed, 1 insertion(+)
  create mode 100644 ohnoesnotmypassword
- # git push
+# git push
  Counting objects: 4, done.
 Delta compression using up to 12 threads.
 Compressing objects: 100% (2/2), done.
@@ -138,7 +138,6 @@ Finally, we force push this:
 
 ```bash
 # git push origin --force --all
-git push origin --force --all
 Counting objects: 13, done.
 Delta compression using up to 12 threads.
 Compressing objects: 100% (6/6), done.
@@ -149,7 +148,7 @@ To git@github.com:Und3rf10w/boblobblob.git
  + e24a8e6...8df8865 master -> master (forced update)
  ```
  
- We've followed the offically suggested way to remove this commit, and again, the GitHub interface shows no indication that the commit of `ohnoesnotmypassword` ever happened. Note that we intentionally haven't yet attempted to `reflog` the repository yet.
+We've followed the offically suggested way to remove this commit, and again, the GitHub interface shows no indication that the commit of `ohnoesnotmypassword` ever happened. Note that we intentionally haven't yet attempted to `reflog` the repository yet.
  
 ## Attempting to access ohnoesnotmypassword before reflog
 First, we'll try to access it locally using `git`:
