@@ -7,9 +7,9 @@ author: David E. Switzer
 ---
 ## Intro
 
-A couple years ago, I did a talk at BSides:Orlando called ["Breadcrumbs"](https://www.youtube.com/watch?v=HzQHWUM8cNo).   It was about collecting wifi probes, semi-auto sorting out which is which (who, more accurately), and alerting you when a few people showed up.   This was entirely born out of having a boss that worked out of Canada regularly showing up to the office -- surprise!  Jonathan and I needed protection!
+A couple years ago, I did a talk at BSides:Orlando called ["Breadcrumbs"](https://www.youtube.com/watch?v=HzQHWUM8cNo).   It was about collecting wifi probes, semi-auto sorting out which is which (or whom, more accurately), and alerting you when a few people showed up.   This was entirely born out of having a boss that worked out of Canada regularly showing up to the office -- surprise!  Jonathan and I needed protection!
 
-Later, Jonathan and I combined my fascination w/ RF metadata w/ his fledgling love of home-automation, and did a talk called ["The Trap House: Making Your Home As Paranoid As Your Are"](https://www.youtube.com/watch?v=OWUu0gQTKkM).   This was a "stable" talk at Derbycon 2017.
+Later, Jonathan and I combined my fascination w/ RF metadata w/ his fledgling love of home-automation, and did a talk called ["The Trap House: Making Your Home As Paranoid As You Are"](https://www.youtube.com/watch?v=OWUu0gQTKkM).   This was a "stable" talk at Derbycon 2017.
 
 At BSides:Tampa 2018, we presented a talk called ["Modern Day Vandals and Thieves: RF Edition"](https://www.youtube.com/watch?v=O01ppGIWjr0), which laid out ways to identify valuables inside of a home, a few ways of detecting if people were home, and detecting if alarm systems were present.
 
